@@ -4,6 +4,13 @@ from tkinter import *
 from tkinter import ttk
 import requests
 from bs4 import BeautifulSoup
+import os
+from dotenv import load_dotenv
+
+# Gets the API key.
+load_dotenv()  # Load from .env file
+
+API_KEY = os.getenv('OPENWEATHER_API_KEY')
 
 gui = Tk()
 
@@ -32,6 +39,24 @@ def findData():
         print("Please select a state to look in.")
         return
     print("Searching at " + citySelector.get() + ", " + stateSelector.get() + ".")
+
+    base_url = "http://api.openweathermap.org/data/2.5/weather"
+    params = {
+        "q": f"{citySelector.get()},{stateSelector.get()},{"US"}",
+        "appid": API_KEY,
+        "units": "imperial"  # or "metric"
+    }
+    
+    response = requests.get(base_url, params=params)
+    data = response.json()
+    
+    if response.status_code == 200:
+        temp = data["main"]["temp"]
+        desc = data["weather"][0]["description"]
+        print(f"{citySelector.get()}, {stateSelector.get()}: {temp}°F, {desc}")
+    else:
+        print(f"Error {response.status_code}: {data.get('message', 'Unknown error')}")
+
 
 enterSelection = Button(gui, text= "Press here to confirm location", command=findData)
 enterSelection.grid()
